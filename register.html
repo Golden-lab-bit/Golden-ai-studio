@@ -1,13 +1,12 @@
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Golden AI Studio | sign up</title>
+    <title>Golden AI Studio | Login</title>
 
     <link rel="stylesheet" href="register.css">
 
@@ -17,70 +16,55 @@
 </head>
 
 <body>
+    <div class="box">
+        <span class="borderLine"></span>
+        <form action="#" method="post">
+            <h2>SignUp</h2>
 
-    <div class="wrapper">
-
-        <form action="">
-            <h1>Welcome To Golden AI Studio</h1>
-
-            <div class="input-box">
+            <div class="inputBox">
                 <input
                     type="text"
-                    placeholder="Full name"
+                    name="fullname"
+                    autocomplete="fullname"
                     required>
-                <i class="bx bxs-user"></i>
+                <span>Full name</span>
+                <i></i>
+            </div>
+            <div class="inputBox">
+                <input
+                    type="email"
+                    name="email"
+                    autocomplete="email"
+                    required>
+                <span>Email</span>
+                <i></i>
             </div>
 
-            <div class="input-box">
-               <input
-               type="text"
-               placeholder="Username"
-               required>
-              <i class="bx bx-user-check"></i>
-            </div>
-
-            <div class="input-box">
-               <input
-               type="email"
-               placeholder="Email"
-               required>
-               <i class="bx bx-envelope-open"></i
->            </div>
-            
-            <div class="input-box">
+            <div class="inputBox">
                 <input
                     type="password"
-                    placeholder="Password"
+                    name="password"
+                    autocomplete="current-password"
                     required>
-                <i class="bx bxs-lock-alt"></i>
+                <span>Password</span>
+                <i></i>
+            </div>
+            <div class="inputBox">
+                <input
+                    type="password"
+                    name="password"
+                    autocomplete="current-password"
+                    required>
+                <span>confirm</span>
+                <i></i>
             </div>
 
-            <div class="input-box">
-               <input 
-               type="password"
-               placeholder="Confirm Password"
-               required>
-              <i class="bx bx-lock-open"></i>
+            <div class="links">
+                <a href="index.html">SignUp</a>
             </div>
 
-            <div class="remember-forgot">
-                <label>
-                    <input type="checkbox">
-                    Remember me
-                </label>
-            </div>
-
-            <button type="submit" class="btn">Sign Up</button>
-
-            <div class="register-link">
-                <p>
-                    Alredy have an account?
-                    <a href="index.html">Login</a>
-                </p>
-            </div>
+            <input type="submit" value="Login">
         </form>
-
     </div>
-
 </body>
 </html>
