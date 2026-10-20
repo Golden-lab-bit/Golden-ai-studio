@@ -18,21 +18,25 @@
 <body>
     <div class="box">
         <span class="borderLine"></span>
-        <form action="#" method="post">
+
+        <form id="registerForm">
             <h2>SignUp</h2>
 
             <div class="inputBox">
                 <input
                     type="text"
+                    id="fullname"
                     name="fullname"
-                    autocomplete="fullname"
+                    autocomplete="name"
                     required>
                 <span>Full name</span>
                 <i></i>
             </div>
+
             <div class="inputBox">
                 <input
                     type="email"
+                    id="email"
                     name="email"
                     autocomplete="email"
                     required>
@@ -43,28 +47,37 @@
             <div class="inputBox">
                 <input
                     type="password"
+                    id="password"
                     name="password"
-                    autocomplete="current-password"
+                    autocomplete="new-password"
+                    minlength="6"
                     required>
                 <span>Password</span>
                 <i></i>
             </div>
+
             <div class="inputBox">
                 <input
                     type="password"
-                    name="password"
-                    autocomplete="current-password"
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    autocomplete="new-password"
+                    minlength="6"
                     required>
-                <span>confirm</span>
+                <span>Confirm Password</span>
                 <i></i>
             </div>
 
+            <p id="message" role="status" aria-live="polite"></p>
+
             <div class="links">
-                <a href="index.html">SignUp</a>
+                <a href="index.html">Already have an account? Login</a>
             </div>
 
-            <input type="submit" value="Login">
+            <input type="submit" value="Create Account">
         </form>
     </div>
+
+    <script type="module" src="register.js"></script>
 </body>
 </html>
