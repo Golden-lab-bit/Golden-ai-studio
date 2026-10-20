@@ -18,28 +18,33 @@
 <body>
     <div class="box">
         <span class="borderLine"></span>
-        <form action="#" method="post">
+
+        <form id="loginForm">
             <h2>Sign in</h2>
 
             <div class="inputBox">
                 <input
-                    type="text"
-                    name="username"
-                    autocomplete="username"
+                    type="email"
+                    id="email"
+                    name="email"
+                    autocomplete="email"
                     required>
-                <span>Username</span>
+                <span>Email</span>
                 <i></i>
             </div>
 
             <div class="inputBox">
                 <input
                     type="password"
+                    id="password"
                     name="password"
                     autocomplete="current-password"
                     required>
                 <span>Password</span>
                 <i></i>
             </div>
+
+            <p id="message" role="status" aria-live="polite"></p>
 
             <div class="links">
                 <a href="reset-password.html">Forgot password?</a>
@@ -49,6 +54,7 @@
             <input type="submit" value="Login">
         </form>
     </div>
-    <scrpt src="login.js"></scrpt>
+
+    <script type="module" src="login.js"></script>
 </body>
 </html>
