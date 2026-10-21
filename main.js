@@ -1,38 +1,22 @@
 
-/* ==============================
-   GOLDEN AI STUDIO
-   Frontend Chat API Connection
-============================== */
+var typed = new Typed(".text", {
+    strings: [
+        "Hi Welcome",
+        "I'm Golden AI Studio",
+        "What Shall We Do Today?"
+    ],
+    typeSpeed: 100,
+    backSpeed: 100,
+    backDelay: 1000,
+    loop: true
+});
 
-// Welcome typing animation
-if (typeof Typed !== "undefined" && document.querySelector(".text")) {
-    new Typed(".text", {
-        strings: [
-            "Hi Welcome",
-            "I'm Golden AI Studio",
-            "What Shall We Do Today?"
-        ],
-        typeSpeed: 100,
-        backSpeed: 100,
-        backDelay: 1000,
-        loop: true
-    });
-}
-
-// Backend URL on Render
-const API_BASE = "https://golden-ai-backend.onrender.com";
-
-// HTML elements
 const chatBody = document.querySelector(".chat-body");
 const messageInput = document.querySelector(".message-input");
-
-// Ka tabbatar ID ɗin button a HTML ɗinka shi ne #send-message
 const sendMessageButton = document.querySelector("#send-message");
-
 const fileInput = document.querySelector("#file-input");
 const fileUploadWrapper = document.querySelector(".file-upload-wrapper");
 
-// User message and image
 const userData = {
     message: null,
     file: {
@@ -49,65 +33,69 @@ const createMessageElement = (content, ...classes) => {
     return div;
 };
 
-// Generate AI response using Render backend
+// Generate AI response
 const generateBotResponse = async (incomingMessageDiv) => {
     const messageElement =
         incomingMessageDiv.querySelector(".message-text");
 
+    const requestOptions = {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            contents: [{
+                parts: [
+                    { text: userData.message },
+                    ...(userData.file.data
+                        ? [{
+                            inline_data: {
+                                mime_type: userData.file.mime_type,
+                                data: userData.file.data
+                            }
+                        }]
+                        : [])
+                ]
+            }]
+        })
+    };
+
     try {
-        const requestOptions = {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                message: userData.message,
-                image: userData.file.data
-                    ? {
-                        data: userData.file.data,
-                        mime_type: userData.file.mime_type
-                    }
-                    : null
-            })
-        };
-
-        // Correct endpoint: /api/chat
-        const response = await fetch(
-            `${API_BASE}/api/chat`,
-            requestOptions
-        );
-
+        // API_URL must point to a compatible AI API endpoint.
+        const API_BASE = "https://golden-ai-backend.onrender.com";
+  
+        const response = await fetch(`${API_BASE}/generate`, requestOptions);
         const data = await response.json();
 
         if (!response.ok) {
             throw new Error(
-                data.error || "The AI request failed."
+                data.error?.message || "Unknown API error"
             );
         }
 
-        // The backend returns { reply: "AI response" }
-        messageElement.textContent =
-            data.reply || "Sorry, no response was generated.";
+        if (data.candidates?.length > 0) {
+            const apiResponseText =
+                data.candidates[0].content.parts
+                    .map(part => part.text || "")
+                    .join("\n")
+                    .replace(/\*\*(.*?)\*\*/g, "$1")
+                    .trim();
 
+            messageElement.textContent =
+                apiResponseText || "No response was generated.";
+        } else {
+            messageElement.textContent =
+                "Sorry, I couldn't generate a response.";
+        }
     } catch (error) {
-        console.error("Golden AI Studio API Error:", error);
-
+        console.error("API Error:", error);
         messageElement.textContent =
-            `Error: ${error.message}. Please try again.`;
-
+            "An error occurred. Please try again.";
     } finally {
         userData.file = {
             data: null,
             mime_type: null
         };
-
-        if (fileInput) {
-            fileInput.value = "";
-        }
-
-        if (fileUploadWrapper) {
-            fileUploadWrapper.classList.remove("file-uploaded");
-        }
 
         incomingMessageDiv.classList.remove("thinking");
 
@@ -124,30 +112,21 @@ const generateBotResponse = async (incomingMessageDiv) => {
 const handleOutgoingMessage = (e) => {
     e.preventDefault();
 
-    if (!chatBody || !messageInput) return;
-
     const message = messageInput.value.trim();
 
     if (!message && !userData.file.data) return;
 
-    userData.message = message || "Please analyze this image.";
+    userData.message = message || "Please analyze this file.";
 
-    // Show user's message and uploaded image
     const messageContent = `
         <div class="message-text"></div>
-        ${
-            userData.file.data &&
-            userData.file.mime_type.startsWith("image/")
-                ? `
-                    <img
-                        src="data:${userData.file.mime_type};base64,${userData.file.data}"
-                        class="attachment"
-                        alt="Uploaded image"
-                        style="max-width:200px; border-radius:10px;"
-                    >
-                `
-                : ""
-        }
+        ${userData.file.data &&
+          userData.file.mime_type.startsWith("image/")
+            ? `<img src="data:${userData.file.mime_type};base64,${userData.file.data}"
+                    class="attachment"
+                    alt="Uploaded image"
+                    style="max-width:200px;">`
+            : ""}
     `;
 
     const outgoingMessageDiv = createMessageElement(
@@ -155,19 +134,17 @@ const handleOutgoingMessage = (e) => {
         "user-message"
     );
 
-    outgoingMessageDiv.querySelector(".message-text").textContent =
-        userData.message;
+    outgoingMessageDiv.querySelector(".message-text")
+        .textContent = userData.message;
 
     chatBody.appendChild(outgoingMessageDiv);
 
-    // Clear input
     messageInput.value = "";
 
     if (fileUploadWrapper) {
         fileUploadWrapper.classList.remove("file-uploaded");
     }
 
-    // Show thinking message
     const incomingMessageDiv = createMessageElement(
         '<div class="message-text">Thinking...</div>',
         "bot-message",
@@ -181,7 +158,6 @@ const handleOutgoingMessage = (e) => {
         behavior: "smooth"
     });
 
-    // Call backend
     generateBotResponse(incomingMessageDiv);
 };
 
@@ -191,23 +167,18 @@ if (sendMessageButton) {
         "click",
         handleOutgoingMessage
     );
-} else {
-    console.warn(
-        'Send button not found. Check that your HTML uses id="send-message".'
-    );
 }
 
 // Send message by pressing Enter
 if (messageInput) {
     messageInput.addEventListener("keydown", (e) => {
         if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
             handleOutgoingMessage(e);
         }
     });
 }
 
-// Handle image upload
+// Handle file upload
 if (fileInput) {
     fileInput.addEventListener("change", () => {
         const file = fileInput.files[0];
@@ -216,13 +187,6 @@ if (fileInput) {
 
         if (!file.type.startsWith("image/")) {
             alert("Please select an image file.");
-            fileInput.value = "";
-            return;
-        }
-
-        // Keep uploads within a reasonable size
-        if (file.size > 5 * 1024 * 1024) {
-            alert("Please choose an image smaller than 5 MB.");
             fileInput.value = "";
             return;
         }
@@ -236,11 +200,6 @@ if (fileInput) {
             if (fileUploadWrapper) {
                 fileUploadWrapper.classList.add("file-uploaded");
             }
-        };
-
-        reader.onerror = () => {
-            alert("Could not read the image. Please try again.");
-            fileInput.value = "";
         };
 
         reader.readAsDataURL(file);
