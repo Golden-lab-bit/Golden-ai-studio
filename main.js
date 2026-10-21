@@ -7,3 +7,5 @@ menuOpenButton.addEventListener("click", () => {
 });
 
 menuCloseButton.addEventListener("click", () => menuOpenButton.click());
+
+const API_BASE = "https://golden-ai-backend.onrender.com";
