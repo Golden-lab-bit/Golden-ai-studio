@@ -59,7 +59,7 @@ body {
     top: -50%;
     left: -50%;
     width: 380px;
-    height: 420px;
+    height: 480px;
     background: linear-gradient(0deg,transparent,
     transparent,#e0e0e0,#e0e0e0,#e0e0e0);
     z-index: 1;
@@ -122,16 +122,18 @@ body {
     cursor: pointer;
     transition: 0.3s;
 }
+
+.google-btn:hover {
+    background: #f1f1f1;
+    transform: translateY(-2px);
+}
+
 .box form p{
     color: #fff;
     margin-top: 20px;
     text-align: center;
     font-weight: 500;
     letter-spacing: 0.1em;
-}
-.google-btn:hover {
-    background: #f1f1f1;
-    transform: translateY(-2px);
 }
 
 .box form .inputBox {
