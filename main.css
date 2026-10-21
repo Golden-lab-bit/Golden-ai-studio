@@ -75,7 +75,7 @@ header .navbar{
 }
 
 .navbar .nav-logo .logo-text {
-    color: #edc967;
+    color: #f3961c;
     font-size: var(--font-size-xl);
     font-weight: var(--font-weight-semibold);
 } 
@@ -145,7 +145,7 @@ padding: 10px 26px;
 border: 2px solid transparent;
 color: var(--primary-color);
 border-radius: var(--border-radius-m);
-background: var(--secondary-color);
+background: #252525;
 font-weight: var(--font-weight-medium);
 transition: 0.3 ease;
 }
@@ -247,7 +247,7 @@ ul {
     justify-items: center;
     width: 100px;
     border-radius: 20px;
-    background: #edc967;
+    background: #f3961c;
     list-style: none;
     padding: 0;
     margin: 0 auto;
