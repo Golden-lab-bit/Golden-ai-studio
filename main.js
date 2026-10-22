@@ -48,12 +48,12 @@ const generateMediaResponse = async (
         }
 
         messageElement.textContent =
-            data.reply || "Ba a samu sakamako ba.";
+            data.reply || "No result found.";
 
     } catch (error) {
         console.error("Backend error:", error);
         messageElement.textContent =
-            `Matsala: ${error.message || "An samu kuskure."}`;
+            `Error: ${error.message || "there's problem."}`;
     } finally {
         incomingMessageDiv.classList.remove("thinking");
 
