@@ -15,7 +15,7 @@ const messageInput = document.querySelector(".message-input");
 const sendMessageButton = document.querySelector("#send-message");
 
 // 👉 KA SANYA GEMINI API KEY DIN KA A NAN 👇
-const GEMINI_API_KEY = "AQ.Ab8RN6J9BfKzjWbONZe739Gz8MJ_pA1SJDSsheHmB3FzOSjTmg";
+const GEMINI_API_KEY = "AQ.Ab8RN6KCKw4E2RW4qQA36ZFcSg886jgztF2iRrVpeWlc-Quk4A";
 
 // Create message element 
 const createMessageElement = (content, ...classes) => {
