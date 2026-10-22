@@ -1,9 +1,8 @@
-
 var typed = new Typed(".text", {
     strings: [
         "Hi Welcome",
         "I'm Golden AI Studio",
-        "What Shall We Do Today?"
+        "What Shall We Generate Today?"
     ],
     typeSpeed: 100,
     backSpeed: 100,
@@ -14,18 +13,9 @@ var typed = new Typed(".text", {
 const chatBody = document.querySelector(".chat-body");
 const messageInput = document.querySelector(".message-input");
 const sendMessageButton = document.querySelector("#send-message");
-const fileInput = document.querySelector("#file-input");
-const fileUploadWrapper = document.querySelector(".file-upload-wrapper");
+const apiBase = "https://golden-ai-backend.onrender.com";
 
-const userData = {
-    message: null,
-    file: {
-        data: null,
-        mime_type: null
-    }
-};
-
-// Create message element
+// Create message element 
 const createMessageElement = (content, ...classes) => {
     const div = document.createElement("div");
     div.classList.add("message", ...classes);
@@ -33,77 +23,78 @@ const createMessageElement = (content, ...classes) => {
     return div;
 };
 
-// Generate AI response
-const generateBotResponse = async (incomingMessageDiv) => {
-    const messageElement =
-        incomingMessageDiv.querySelector(".message-text");
+// Generate AI Media (Image, Voice, or Video)
+const generateMediaResponse = async (incomingMessageDiv, promptText, mode = "image") => {
+    const messageElement = incomingMessageDiv.querySelector(".message-text");
+    
+    let endpoint = `${apiBase}/api/image`;
+    let requestBody = { prompt: promptText };
+
+    // Selecting the path that goes according to the need
+    if (mode === "voice") {
+        endpoint = `${apiBase}/api/voice`;
+        requestBody = { text: promptText };
+    } else if (mode === "video") {
+        endpoint = `${apiBase}/api/video`;
+        requestBody = { prompt: promptText };
+    } else if (mode === "image") {
+        endpoint = `${apiBase}/api/image`;
+        requestBody = { prompt: promptText, ratio: "1:1" };
+    }
 
     const requestOptions = {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-            contents: [{
-                parts: [
-                    { text: userData.message },
-                    ...(userData.file.data
-                        ? [{
-                            inline_data: {
-                                mime_type: userData.file.mime_type,
-                                data: userData.file.data
-                            }
-                        }]
-                        : [])
-                ]
-            }]
-        })
+        body: JSON.stringify(requestBody)
     };
 
     try {
-        // API_URL must point to a compatible AI API endpoint.
-        const API_BASE = "https://golden-ai-backend.onrender.com";
-  
-        const response = await fetch(`${API_BASE}/generate`, requestOptions);
+        const response = await fetch(endpoint, requestOptions);
         const data = await response.json();
 
         if (!response.ok) {
-            throw new Error(
-                data.error?.message || "Unknown API error"
-            );
+            throw new Error(data.error || "Unknown API error");
         }
 
-        if (data.candidates?.length > 0) {
-            const apiResponseText =
-                data.candidates[0].content.parts
-                    .map(part => part.text || "")
-                    .join("\n")
-                    .replace(/\*\*(.*?)\*\*/g, "$1")
-                    .trim();
-
-            messageElement.textContent =
-                apiResponseText || "No response was generated.";
+        // Idan Hoto ne aka dawo da shi
+        if (mode === "image" && data.data) {
+            messageElement.innerHTML = `
+                <p>An ƙirƙiri hoton ka nasara:</p>
+                <img src="data:${data.mimeType};base64,${data.data}" class="attachment" alt="Generated Image" style="max-width:100%; border-radius:10px;">
+            `;
+        } 
+        // Idan Murya (Voice) ce aka dawo da ita
+        else if (mode === "voice" && data.data) {
+            messageElement.innerHTML = `
+                <p>Ga muryar da aka ƙirƙira:</p>
+                <audio controls style="width: 100%; margin-top: 8px;">
+                    <source src="data:${data.mimeType};base64,${data.data}" type="${data.mimeType}">
+                    Your browser does not support the audio element.
+                </audio>
+            `;
+        } 
+        // Idan Bidiyo ne aka dawo da shi
+        else if (mode === "video" && data.data) {
+            messageElement.innerHTML = `
+                <p>Ga bidiyon da aka ƙirƙira:</p>
+                <video controls style="width: 100%; margin-top: 8px; border-radius:10px;">
+                    <source src="data:${data.mimeType};base64,${data.data}" type="${data.mimeType}">
+                    Your browser does not support the video tag.
+                </video>
+            `;
         } else {
-            messageElement.textContent =
-                "Sorry, I couldn't generate a response.";
+            messageElement.textContent = "Ba a samu sakamako ba.";
         }
+
     } catch (error) {
         console.error("API Error:", error);
-        messageElement.textContent =
-            "An error occurred. Please try again.";
+        messageElement.textContent = `Matsala: ${error.message || "An error occurred."}`;
     } finally {
-        userData.file = {
-            data: null,
-            mime_type: null
-        };
-
         incomingMessageDiv.classList.remove("thinking");
-
         if (chatBody) {
-            chatBody.scrollTo({
-                top: chatBody.scrollHeight,
-                behavior: "smooth"
-            });
+            chatBody.scrollTo({ top: chatBody.scrollHeight, behavior: "smooth" });
         }
     }
 };
@@ -111,97 +102,40 @@ const generateBotResponse = async (incomingMessageDiv) => {
 // Handle outgoing message
 const handleOutgoingMessage = (e) => {
     e.preventDefault();
-
     const message = messageInput.value.trim();
+    if (!message) return;
 
-    if (!message && !userData.file.data) return;
+    // You can change  'image' to 'voice' or 'video' As much as you want it to do
+    // (A gaba za mu iya saka zaɓe/dropdown ko tab domin mutum ya zaɓi abin da yake so)
+    const currentMode = "image"; // Za ka iya sanya shi ya zama 'image', 'voice', ko 'video'
 
-    userData.message = message || "Please analyze this file.";
-
-    const messageContent = `
-        <div class="message-text"></div>
-        ${userData.file.data &&
-          userData.file.mime_type.startsWith("image/")
-            ? `<img src="data:${userData.file.mime_type};base64,${userData.file.data}"
-                    class="attachment"
-                    alt="Uploaded image"
-                    style="max-width:200px;">`
-            : ""}
-    `;
-
-    const outgoingMessageDiv = createMessageElement(
-        messageContent,
-        "user-message"
-    );
-
-    outgoingMessageDiv.querySelector(".message-text")
-        .textContent = userData.message;
-
+    // 1. Show important message
+    const outgoingMessageDiv = createMessageElement(`<div class="message-text"></div>`, "user-message");
+    outgoingMessageDiv.querySelector(".message-text").textContent = message;
     chatBody.appendChild(outgoingMessageDiv);
 
     messageInput.value = "";
 
-    if (fileUploadWrapper) {
-        fileUploadWrapper.classList.remove("file-uploaded");
-    }
-
-    const incomingMessageDiv = createMessageElement(
-        '<div class="message-text">Thinking...</div>',
-        "bot-message",
-        "thinking"
-    );
-
+    // 2. Show "Thinking..." when waiting
+    const incomingMessageDiv = createMessageElement('<div class="message-text">Generating... Please wait...</div>', "bot-message", "thinking");
     chatBody.appendChild(incomingMessageDiv);
 
-    chatBody.scrollTo({
-        top: chatBody.scrollHeight,
-        behavior: "smooth"
-    });
+    chatBody.scrollTo({ top: chatBody.scrollHeight, behavior: "smooth" });
 
-    generateBotResponse(incomingMessageDiv);
+    // 3. Send request to Backend
+    generateMediaResponse(incomingMessageDiv, message, currentMode);
 };
 
-// Send message on button click
+// (Event Listeners)
 if (sendMessageButton) {
-    sendMessageButton.addEventListener(
-        "click",
-        handleOutgoingMessage
-    );
+    sendMessageButton.addEventListener("click", handleOutgoingMessage);
 }
 
-// Send message by pressing Enter
 if (messageInput) {
     messageInput.addEventListener("keydown", (e) => {
         if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
             handleOutgoingMessage(e);
         }
-    });
-}
-
-// Handle file upload
-if (fileInput) {
-    fileInput.addEventListener("change", () => {
-        const file = fileInput.files[0];
-
-        if (!file) return;
-
-        if (!file.type.startsWith("image/")) {
-            alert("Please select an image file.");
-            fileInput.value = "";
-            return;
-        }
-
-        const reader = new FileReader();
-
-        reader.onload = () => {
-            userData.file.data = reader.result.split(",")[1];
-            userData.file.mime_type = file.type;
-
-            if (fileUploadWrapper) {
-                fileUploadWrapper.classList.add("file-uploaded");
-            }
-        };
-
-        reader.readAsDataURL(file);
     });
 }
