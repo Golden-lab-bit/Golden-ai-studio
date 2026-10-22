@@ -1,7 +1,4 @@
-
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
-
-/* General Reset */
 * {
     margin: 0;
     padding: 0;
@@ -212,14 +209,8 @@ body {
     margin-top: 8px;
 }
 
-/* Chat Footer */
-.chat-footer {
-    position: relative;
-    width: 100%;
-    padding: 0;
-}
-
-.chat-footer .chat-form {
+/* Chat Form */
+.chat-form {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -229,9 +220,10 @@ body {
     padding: 7px 10px 7px 16px;
     outline: 1px solid #ccccd5;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    width: 100%;
 }
 
-.chat-footer .chat-form:focus-within {
+.chat-form:focus-within {
     outline: 2px solid var(--main-color);
 }
 
@@ -419,7 +411,7 @@ body {
         padding: 10px 12px;
     }
 
-    .chat-footer .chat-form {
+    .chat-form {
         padding: 5px 7px 5px 12px;
         gap: 4px;
     }
