@@ -13,7 +13,9 @@ var typed = new Typed(".text", {
 const chatBody = document.querySelector(".chat-body");
 const messageInput = document.querySelector(".message-input");
 const sendMessageButton = document.querySelector("#send-message");
-const apiBase = "https://golden-ai-backend.onrender.com";
+
+// 👉 KA SANYA GEMINI API KEY DIN KA A NAN 👇
+const GEMINI_API_KEY = "AQ.Ab8RN6J9BfKzjWbONZe739Gz8MJ_pA1SJDSsheHmB3FzOSjTmg";
 
 // Create message element 
 const createMessageElement = (content, ...classes) => {
@@ -23,74 +25,46 @@ const createMessageElement = (content, ...classes) => {
     return div;
 };
 
-// Generate AI Media (Image, Voice, or Video)
+// Generate AI Media 
 const generateMediaResponse = async (incomingMessageDiv, promptText, mode = "image") => {
     const messageElement = incomingMessageDiv.querySelector(".message-text");
-    
-    let endpoint = `${apiBase}/api/image`;
-    let requestBody = { prompt: promptText };
-
-    // Selecting the path that goes according to the need
-    if (mode === "voice") {
-        endpoint = `${apiBase}/api/voice`;
-        requestBody = { text: promptText };
-    } else if (mode === "video") {
-        endpoint = `${apiBase}/api/video`;
-        requestBody = { prompt: promptText };
-    } else if (mode === "image") {
-        endpoint = `${apiBase}/api/image`;
-        requestBody = { prompt: promptText, ratio: "1:1" };
-    }
-
-    const requestOptions = {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(requestBody)
-    };
 
     try {
-        const response = await fetch(endpoint, requestOptions);
+        // We are using Google Gemini API Endpoint real in Frontend
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+        
+        const requestBody = {
+            contents: [{
+                parts: [{ text: promptText }]
+            }]
+        };
+
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(requestBody)
+        });
+
         const data = await response.json();
 
         if (!response.ok) {
-            throw new Error(data.error || "Unknown API error");
+            throw new Error(data.error?.message || "Unknown API error");
         }
 
-        // If the photo has been returned
-        if (mode === "image" && data.data) {
-            messageElement.innerHTML = `
-                <p>Image generated successfully:</p>
-                <img src="data:${data.mimeType};base64,${data.data}" class="attachment" alt="Generated Image" style="max-width:100%; border-radius:10px;">
-            `;
-        } 
-        // If Voice has been returned
-        else if (mode === "voice" && data.data) {
-            messageElement.innerHTML = `
-                <p>Voice generated succesfully:</p>
-                <audio controls style="width: 100%; margin-top: 8px;">
-                    <source src="data:${data.mimeType};base64,${data.data}" type="${data.mimeType}">
-                    Your browser does not support the audio element.
-                </audio>
-            `;
-        } 
-        // If video has been returned
-        else if (mode === "video" && data.data) {
-            messageElement.innerHTML = `
-                <p>Video generated succesfully:</p>
-                <video controls style="width: 100%; margin-top: 8px; border-radius:10px;">
-                    <source src="data:${data.mimeType};base64,${data.data}" type="${data.mimeType}">
-                    Your browser does not support the video tag.
-                </video>
-            `;
+        // Taking Gemini's response
+        const candidate = data.candidates?.[0];
+        if (candidate && candidate.content?.parts?.[0]?.text) {
+            const replyText = candidate.content.parts[0].text;
+            messageElement.textContent = replyText;
         } else {
             messageElement.textContent = "No results were found.";
         }
 
     } catch (error) {
         console.error("API Error:", error);
-        messageElement.textContent = `Problem: ${error.message || "An error occurred."}`;
+        messageElement.textContent = `Error: ${error.message || "An error occurred."}`;
     } finally {
         incomingMessageDiv.classList.remove("thinking");
         if (chatBody) {
@@ -105,11 +79,9 @@ const handleOutgoingMessage = (e) => {
     const message = messageInput.value.trim();
     if (!message) return;
 
-    // You can change  'image' to 'voice' or 'video' As much as you want it to do
-    // (A gaba za mu iya saka zaɓe/dropdown ko tab domin mutum ya zaɓi abin da yake so)
-    const currentMode = "image"; // Za ka iya sanya shi ya zama 'image', 'voice', ko 'video'
+    const currentMode = "image"; // You can turn it to 'image', 'voice', or 'video'
 
-    // 1. Show important message
+    // 1. Show user message
     const outgoingMessageDiv = createMessageElement(`<div class="message-text"></div>`, "user-message");
     outgoingMessageDiv.querySelector(".message-text").textContent = message;
     chatBody.appendChild(outgoingMessageDiv);
@@ -122,7 +94,7 @@ const handleOutgoingMessage = (e) => {
 
     chatBody.scrollTo({ top: chatBody.scrollHeight, behavior: "smooth" });
 
-    // 3. Send request to Backend
+    // 3. Send request to Google Gemini API
     generateMediaResponse(incomingMessageDiv, message, currentMode);
 };
 
