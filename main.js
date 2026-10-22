@@ -11,7 +11,7 @@ var typed = new Typed(".text", {
 });
 
 // Your deployed Vercel backend
-const BACKEND_URL = "https://golden-ai-backend.vercel.app";
+const BACKEND_URL = "https://golden-ai-backend-rho.vercel.app/";
 
 const chatBody = document.querySelector(".chat-body");
 const messageInput = document.querySelector(".message-input");
