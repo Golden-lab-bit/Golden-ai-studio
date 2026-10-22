@@ -58,39 +58,39 @@ const generateMediaResponse = async (incomingMessageDiv, promptText, mode = "ima
             throw new Error(data.error || "Unknown API error");
         }
 
-        // Idan Hoto ne aka dawo da shi
+        // If the photo has been returned
         if (mode === "image" && data.data) {
             messageElement.innerHTML = `
-                <p>An ƙirƙiri hoton ka nasara:</p>
+                <p>Image generated successfully:</p>
                 <img src="data:${data.mimeType};base64,${data.data}" class="attachment" alt="Generated Image" style="max-width:100%; border-radius:10px;">
             `;
         } 
-        // Idan Murya (Voice) ce aka dawo da ita
+        // If Voice has been returned
         else if (mode === "voice" && data.data) {
             messageElement.innerHTML = `
-                <p>Ga muryar da aka ƙirƙira:</p>
+                <p>Voice generated succesfully:</p>
                 <audio controls style="width: 100%; margin-top: 8px;">
                     <source src="data:${data.mimeType};base64,${data.data}" type="${data.mimeType}">
                     Your browser does not support the audio element.
                 </audio>
             `;
         } 
-        // Idan Bidiyo ne aka dawo da shi
+        // If video has been returned
         else if (mode === "video" && data.data) {
             messageElement.innerHTML = `
-                <p>Ga bidiyon da aka ƙirƙira:</p>
+                <p>Video generated succesfully:</p>
                 <video controls style="width: 100%; margin-top: 8px; border-radius:10px;">
                     <source src="data:${data.mimeType};base64,${data.data}" type="${data.mimeType}">
                     Your browser does not support the video tag.
                 </video>
             `;
         } else {
-            messageElement.textContent = "Ba a samu sakamako ba.";
+            messageElement.textContent = "No results were found.";
         }
 
     } catch (error) {
         console.error("API Error:", error);
-        messageElement.textContent = `Matsala: ${error.message || "An error occurred."}`;
+        messageElement.textContent = `Problem: ${error.message || "An error occurred."}`;
     } finally {
         incomingMessageDiv.classList.remove("thinking");
         if (chatBody) {
