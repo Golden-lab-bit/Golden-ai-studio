@@ -14,8 +14,8 @@ const chatBody = document.querySelector(".chat-body");
 const messageInput = document.querySelector(".message-input");
 const sendMessageButton = document.querySelector("#send-message");
 
-// 👉 KA SANYA GEMINI API KEY DIN KA A NAN 👇
-const GEMINI_API_KEY = "AQ.Ab8RN6KCKw4E2RW4qQA36ZFcSg886jgztF2iRrVpeWlc-Quk4A";
+// 👉 KA SANYA OPENAI API KEY DIN KA A NAN 👇
+const OPENAI_API_KEY = "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";
 
 // Create message element 
 const createMessageElement = (content, ...classes) => {
@@ -25,24 +25,25 @@ const createMessageElement = (content, ...classes) => {
     return div;
 };
 
-// Generate AI Media 
-const generateMediaResponse = async (incomingMessageDiv, promptText, mode = "image") => {
+// Generate AI Response using OpenAI API
+const generateMediaResponse = async (incomingMessageDiv, promptText) => {
     const messageElement = incomingMessageDiv.querySelector(".message-text");
 
     try {
-        // We are using Google Gemini API Endpoint real in Frontend
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+        const url = "https://api.openai.com/v1/chat/completions";
         
         const requestBody = {
-            contents: [{
-                parts: [{ text: promptText }]
-            }]
+            model: "gpt-4o-mini", // Zaka iya amfani da gpt-3.5-turbo ko wani model din na OpenAI
+            messages: [
+                { role: "user", content: promptText }
+            ]
         };
 
         const response = await fetch(url, {
             method: "POST",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${OPENAI_API_KEY}`
             },
             body: JSON.stringify(requestBody)
         });
@@ -50,21 +51,20 @@ const generateMediaResponse = async (incomingMessageDiv, promptText, mode = "ima
         const data = await response.json();
 
         if (!response.ok) {
-            throw new Error(data.error?.message || "Unknown API error");
+            throw new Error(data.error?.message || "Unknown OpenAI API error");
         }
 
-        // Taking Gemini's response
-        const candidate = data.candidates?.[0];
-        if (candidate && candidate.content?.parts?.[0]?.text) {
-            const replyText = candidate.content.parts[0].text;
+        // Daukar amsar da OpenAI ya bada
+        const replyText = data.choices?.[0]?.message?.content;
+        if (replyText) {
             messageElement.textContent = replyText;
         } else {
-            messageElement.textContent = "No results were found.";
+            messageElement.textContent = "Ba a samu sakamako ba.";
         }
 
     } catch (error) {
         console.error("API Error:", error);
-        messageElement.textContent = `Error: ${error.message || "An error occurred."}`;
+        messageElement.textContent = `Matsala: ${error.message || "An error occurred."}`;
     } finally {
         incomingMessageDiv.classList.remove("thinking");
         if (chatBody) {
@@ -79,8 +79,6 @@ const handleOutgoingMessage = (e) => {
     const message = messageInput.value.trim();
     if (!message) return;
 
-    const currentMode = "image"; // You can turn it to 'image', 'voice', or 'video'
-
     // 1. Show user message
     const outgoingMessageDiv = createMessageElement(`<div class="message-text"></div>`, "user-message");
     outgoingMessageDiv.querySelector(".message-text").textContent = message;
@@ -94,8 +92,8 @@ const handleOutgoingMessage = (e) => {
 
     chatBody.scrollTo({ top: chatBody.scrollHeight, behavior: "smooth" });
 
-    // 3. Send request to Google Gemini API
-    generateMediaResponse(incomingMessageDiv, message, currentMode);
+    // 3. Send request to OpenAI API
+    generateMediaResponse(incomingMessageDiv, message);
 };
 
 // (Event Listeners)
