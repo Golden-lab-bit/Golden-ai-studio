@@ -10,6 +10,9 @@ var typed = new Typed(".text", {
     loop: true
 });
 
+// Your deployed Vercel backend
+const BACKEND_URL = "https://golden-ai-backend.vercel.app";
+
 const chatBody = document.querySelector(".chat-body");
 const messageInput = document.querySelector(".message-input");
 const sendMessageButton = document.querySelector("#send-message");
@@ -29,31 +32,39 @@ const generateMediaResponse = async (
         incomingMessageDiv.querySelector(".message-text");
 
     try {
-        const response = await fetch("/api/chat", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                message: promptText
-            })
-        });
+        const response = await fetch(
+            `${BACKEND_URL}/api/chat`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    message: promptText
+                })
+            }
+        );
 
         const data = await response.json().catch(() => ({}));
 
         if (!response.ok) {
             throw new Error(
-                data.error || `Request failed (${response.status})`
+                data.error ||
+                data.message ||
+                `Request failed (${response.status})`
             );
         }
 
         messageElement.textContent =
-            data.reply || "No result found.";
+            data.reply ||
+            data.message ||
+            "No response received from the AI.";
 
     } catch (error) {
         console.error("Backend error:", error);
+
         messageElement.textContent =
-            `Error: ${error.message || "there's problem."}`;
+            `Error: ${error.message || "Unable to connect to backend."}`;
     } finally {
         incomingMessageDiv.classList.remove("thinking");
 
