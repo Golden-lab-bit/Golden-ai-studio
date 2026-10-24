@@ -10,112 +10,131 @@ var typed = new Typed(".text", {
     loop: true
 });
 
-// Your deployed Vercel backend
-const BACKEND_URL = "https://golden-ai-backend-rho.vercel.app";
-
-const chatBody = document.querySelector(".chat-body");
 const messageInput = document.querySelector(".message-input");
 const sendMessageButton = document.querySelector("#send-message");
+const fileInput = document.querySelector("#file-input");
+const fileUploadWrapper = document.querySelector("#file-upload-wrapper");
+const fileCancelButton = document.querySelector("#file-cancel");
+const apiBase = "https://golden-ai-backend.onrender.com";
+const chatForm = document.querySelector('.chat-form');
+const historyList = document.getElementById('history-list');
+const emptyHistory = document.getElementById('empty-history');
 
-const createMessageElement = (content, ...classes) => {
-    const div = document.createElement("div");
-    div.classList.add("message", ...classes);
-    div.innerHTML = content;
-    return div;
+const userData = {
+    message: null,
+    file: {
+        data: null,
+        mime_type: null
+    }
 };
 
-const generateMediaResponse = async (
-    incomingMessageDiv,
-    promptText
-) => {
-    const messageElement =
-        incomingMessageDiv.querySelector(".message-text");
+const generateMediaResponse = async (resultCard, mediaElement, promptText, mode = "image") => {
+    let endpoint = `${apiBase}/api/image`;
+    let requestBody = { prompt: promptText };
+
+    if (mode === "voice") {
+        endpoint = `${apiBase}/api/voice`;
+        requestBody = { text: promptText };
+    } else if (mode === "video") {
+        endpoint = `${apiBase}/api/video`;
+        requestBody = { prompt: promptText };
+    } else if (mode === "image") {
+        endpoint = `${apiBase}/api/image`;
+        requestBody = { prompt: promptText, ratio: "1:1" };
+    }
+
+    const requestOption = {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(requestBody)
+    };
 
     try {
-        const response = await fetch(
-            `${BACKEND_URL}/api/chat`,
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    message: promptText
-                })
-            }
-        );
-
-        const data = await response.json().catch(() => ({}));
+        const response = await fetch(endpoint, requestOption);
+        const data = await response.json();
 
         if (!response.ok) {
-            throw new Error(
-                data.error ||
-                data.message ||
-                `Request failed (${response.status})`
-            );
+            throw new Error(data.error || "Unknown error");
         }
 
-        messageElement.textContent =
-            data.reply ||
-            data.message ||
-            "No response received from the AI.";
+        if (mode === "image" && data.data) {
+            mediaElement.innerHTML = `
+                <p style="font-size: 13px; color: #aaa8bc; margin-bottom: 8px;">Prompt: ${promptText}</p>
+                <img src="data:${data.mimeType};base64,${data.data}" alt="Generated Image" style="width:100%; border-radius:10px;">
+            `;
+            resultCard.setAttribute('data-category', 'image');
+        } 
+        else if (mode === "voice" && data.data) {
+            mediaElement.innerHTML = `
+                <p style="font-size: 13px; color: #aaa8bc; margin-bottom: 8px;">Prompt: ${promptText}</p>
+                <audio controls style="width: 100%; margin-top: 8px;">
+                    <source src="data:${data.mimeType};base64,${data.data}" type="${data.mimeType}">
+                    Your browser does not support the audio element.
+                </audio>
+            `;
+            resultCard.setAttribute('data-category', 'voice');
+        } 
+        else if (mode === "video" && data.data) {
+            mediaElement.innerHTML = `
+                <p style="font-size: 13px; color: #aaa8bc; margin-bottom: 8px;">Prompt: ${promptText}</p>
+                <video controls style="width: 100%; margin-top: 8px; border-radius:10px;">
+                    <source src="data:${data.mimeType};base64,${data.data}" type="${data.mimeType}">
+                    Your browser does not support the video tag.
+                </video>
+            `;
+            resultCard.setAttribute('data-category', 'video');
+        } else {
+            mediaElement.innerHTML = `<p style="color: #ff4d4d;">Sorry, couldn't generate.</p>`;
+        }
 
     } catch (error) {
-        console.error("Backend error:", error);
-
-        messageElement.textContent =
-            `Error: ${error.message || "Unable to connect to backend."}`;
+        console.error("API Error:", error);
+        mediaElement.innerHTML = `<p style="color: #ff4d4d;">Error: ${error.message || "Please try again"}</p>`;
     } finally {
-        incomingMessageDiv.classList.remove("thinking");
-
-        if (chatBody) {
-            chatBody.scrollTo({
-                top: chatBody.scrollHeight,
-                behavior: "smooth"
-            });
-        }
+        userData.file = {};
     }
 };
 
 const handleOutgoingMessage = (e) => {
     e.preventDefault();
+    const promptText = messageInput.value.trim();
+    if (!promptText) return;
 
-    const message = messageInput.value.trim();
-
-    if (!message || !chatBody) return;
-
-    const outgoingMessageDiv = createMessageElement(
-        '<div class="message-text"></div>',
-        "user-message"
-    );
-
-    outgoingMessageDiv.querySelector(".message-text")
-        .textContent = message;
-
-    chatBody.appendChild(outgoingMessageDiv);
     messageInput.value = "";
+    if (fileUploadWrapper) {
+        fileUploadWrapper.classList.remove("file-uploaded");
+    }
 
-    const incomingMessageDiv = createMessageElement(
-        '<div class="message-text">Generating... Please wait...</div>',
-        "bot-message",
-        "thinking"
-    );
+    if (emptyHistory) {
+        emptyHistory.style.display = 'none';
+    }
 
-    chatBody.appendChild(incomingMessageDiv);
+    const currentMode = "image"; 
 
-    chatBody.scrollTo({
-        top: chatBody.scrollHeight,
-        behavior: "smooth"
-    });
+    const resultCard = document.createElement('div');
+    resultCard.classList.add('history-item');
+    resultCard.style.cssText = "background: #1c1c1c; padding: 15px; border-radius: 15px; border: 1px solid #29283a;";
 
-    generateMediaResponse(incomingMessageDiv, message);
+    const mediaElement = document.createElement('div');
+    mediaElement.innerHTML = `<p style="color: #0ef;">Generating ${currentMode}... Please wait...</p>`;
+    resultCard.appendChild(mediaElement);
+
+    if (historyList) {
+        historyList.prepend(resultCard); 
+    }
+
+    generateMediaResponse(resultCard, mediaElement, promptText, currentMode);
 };
 
+
 if (sendMessageButton) {
-    sendMessageButton.addEventListener(
-        "click",
-        handleOutgoingMessage
-    );
+    sendMessageButton.addEventListener("click", handleOutgoingMessage);
+}
+
+if (chatForm) {
+    chatForm.addEventListener("submit", handleOutgoingMessage);
 }
 
 if (messageInput) {
