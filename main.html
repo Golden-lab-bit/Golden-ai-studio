@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Golden Ai Studio</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+        <!-- Wurin da aka saka link na Google Material Symbols -->
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
+        <link rel="stylesheet" href="main.css">
+        <script src="https://unpkg.com/typed.js@3.0.0/dist/typed.umd.js"></script>
+    </head>
+    <body>
+        <header class="header">
+            <a href="#" class="logo">Golden Ai Studio</a>
+            <nav class="navbar">
+                <a href="#" style="--1:1" class="active">Home</a>
+                <a href="pricing.html" style="--1:2">Price</a>
+            </nav>
+        </header>
+
+        <section class="home">
+            <div class="home-content">
+                <h2>Welcome To Golden Ai Studio</h2>
+                <h3><span class="text"></span></h3>
+                <div class="home-sci"></div>
+            </div>
+        </section>
+
+        <!-- An gyara an sanya textarea da controls a cikin <form> -->
+        <div class="chat-footer">
+            <form action="#" class="chat-form">
+                <div class="generation-modes">
+                    <button type="button" class="mode-btn active" data-mode="image">
+                        <i class="fa-solid fa-image"></i> Image
+                    </button>
+            
+                    <button type="button" class="mode-btn" data-mode="video">
+                        <i class="fa-solid fa-video"></i> Video
+                    </button>
+            
+                    <button type="button" class="mode-btn" data-mode="voice">
+                        <i class="fa-solid fa-microphone"></i> Voice
+                    </button>
+                </div>
+            
+                <textarea
+                    placeholder="Paste a Prompt to Start"
+                    class="message-input"
+                    required
+                ></textarea>
+            
+                <div class="chat-controls">
+                    <div class="file-upload-wrapper" id="file-upload-wrapper">
+                        <input type="file" accept="image/*" id="file-input" hidden>
+                        <img src="#" alt="Selected image preview">
+            
+                        <button type="button" id="file-upload" class="material-symbols-rounded">
+                            attach_file
+                        </button>
+            
+                        <button type="button" id="file-cancel" class="material-symbols-rounded">
+                            close
+                        </button>
+                    </div>
+            
+                    <button type="submit" id="send-message" class="material-symbols-rounded">
+                        arrow_upward
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="history-header">
+            <h1>Generation <span>History</span></h1>
+            <p>Your AI creations in one place</p>
+        </div>
+                
+        <main class="history-container">
+            <div class="history-toolbar">
+                <h2>My Creations</h2>
+                <button id="clear-history" type="button">Clear History</button>
+            </div>
+            
+            <div class="history-filters">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="image">Images</button>
+                <button class="filter-btn" data-filter="video">Videos</button>
+                <button class="filter-btn" data-filter="voice">Voice</button>
+                <button class="filter-btn" data-filter="chat">Chat</button>
+            </div>
+            
+            <section id="history-list" class="history-grid">
+                <div id="empty-history" class="empty-history">
+                    <div class="empty-icon">✦</div>
+                    <h3>No creations yet</h3>
+                    <p>Your generated images, videos, and voice will appear here.</p>
+                    <a href="index.html" class="create-btn">Start Creating</a>
+                </div>
+            </section>
+        </main>
+
+        <script src="main.js"></script>
+    </body>
+</html>
