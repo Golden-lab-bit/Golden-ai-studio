@@ -6,114 +6,62 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Golden AI Studio</title>
+    <title>Golden AI Studio | Login</title>
 
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
 
-    <link rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0">
-
-    <link rel="stylesheet" href="main.css">
-
-    <script src="https://unpkg.com/typed.js@3.0.0/dist/typed.umd.js"
-        defer></script>
-    <script src="main.js" defer></script>
+    <link
+        href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+        rel="stylesheet">
 </head>
 
 <body>
-    <!-- Header -->
-    <header class="header">
-        <a href="#" class="logo">Golden AI Studio</a>
+    <div class="box">
+        <span class="borderLine"></span>
+        <form action="#" method="post">
+            <h2>Sign in</h2>
 
-        <nav class="navbar">
-            <a href="#" style="--1:1" class="active">Home</a>
-            <a href="#" style="--1:2">Image</a>
-            <a href="#" style="--1:3">Video</a>
-            <a href="#" style="--1:4">Voice</a>
-            <a href="#" style="--1:5">Price</a>
-        </nav>
-    </header>
+            
+<button type="button" id="google-login" class="google-btn">
+    <img
+        src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+        alt="Google"
+        width="20"
+        height="20"
+    >
+    <span>Continue with Google</span>
+</button>
+   <p>Or</p>
 
-    <!-- Home Section -->
-    <section class="home">
-        <div class="home-content">
-            <h2>Welcome To Golden AI Studio</h2>
-            <h3><span class="text"></span></h3>
-            <div class="home-sci"></div>
-        </div>
-    </section>
 
-    <!-- AI Chatbot -->
-    <div class="chat-container">
-
-        <div class="chatbot-popup">
-            <div class="chat-body">
-                <div class="message bot-message">
-                    <div class="message-text">
-                        Hello! Welcome to Golden AI Studio.
-                        How can I help you today?
-                    </div>
-                </div>
+            <div class="inputBox">
+                <input
+                    type="text"
+                    name="username"
+                    autocomplete="username"
+                    required>
+                <span>Username</span>
+                <i></i>
             </div>
-        </div>
 
-        <!-- Chat Input -->
-        <div class="chat-footer">
-            <form action="#" class="chat-form">
+            <div class="inputBox">
+                <input
+                    type="password"
+                    name="password"
+                    autocomplete="current-password"
+                    required>
+                <span>Password</span>
+                <i></i>
+            </div>
 
-                <textarea
-                    placeholder="Ask Golden AI anything..."
-                    class="message-input"
-                    rows="1"
-                ></textarea>
+            <div class="links">
+                <a href="reset-password.html">Forgot password?</a>
+                <a href="signup.html">Signup</a>
+            </div>
 
-                <div class="chat-controls">
-
-                    <button
-                        type="button"
-                        id="emoji-picker"
-                        class="material-symbols-rounded"
-                        aria-label="Emoji picker"
-                    >sentiment_satisfied</button>
-
-                    <div class="file-upload-wrapper">
-
-                        <input
-                            type="file"
-                            accept="image/*"
-                            id="file-input"
-                            hidden
-                        >
-
-                        <img src="#" alt="Selected image preview"
-                            id="file-preview" hidden>
-
-                        <button
-                            type="button"
-                            id="file-upload"
-                            class="material-symbols-rounded"
-                            aria-label="Upload image"
-                        >attach_file</button>
-
-                        <button
-                            type="button"
-                            id="file-cancel"
-                            class="material-symbols-rounded"
-                            aria-label="Remove image"
-                        >close</button>
-                    </div>
-
-                    <button
-                        type="submit"
-                        id="send-message"
-                        class="material-symbols-rounded"
-                        aria-label="Send message"
-                    >arrow_upward</button>
-
-                </div>
-            </form>
-        </div>
+            <input type="submit" value="Login">
+        </form>
     </div>
+    <scrpt src="script.js"></scrpt>
 </body>
 </html>
