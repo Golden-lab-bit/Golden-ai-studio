@@ -1,53 +1,121 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Golden AI Studio Main</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-    <link rel="stylesheet" href="pricing.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10131f">
+  <title>Golden AI Studio | Pricing</title>
+
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <link rel="stylesheet" href="pricing.css">
+
+  <!-- Firebase Authentication -->
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 </head>
 <body>
-    <section>
-      <div class="services" id="services">
-        <div class="container">
-            <h1 class="sub-title">My <span>Prices</span></h1>
-            <div class="services-list">
-                <div>
-                    <h2>Daily plan</h2>
-                    <h3>₦500</h3>
-                    <p>✔️ Generate up to 5min video</p>
-                    <p>✔️ Generate 5 images</p>
-                    <p>✔️ Generate 3 voices</p>
-                    <a href="#" class="pay">Pay</a>
-                </div>
-                <div>
-                    <h2>weekly plan</h2>
-                    <h3>₦2,000</h3>
-                    <p>✔️ Generate 5 5min video daily</p>
-                    <p>✔️ Generate 15 images daily</p>
-                    <p>✔️ Generate 10 voices daily</p>
-                    <a href="#" class="pay">Pay</a>
-                </div>
-                <div>
-                    <h2>Monthly plan</h2>
-                    <h3>₦10,000</h3>
-                    <p>✔️ Generate 10 10min video daily</p>
-                    <p>✔️ Generate 20 images daily</p>
-                    <p>✔️ Generate 15 voices daily</p>
-                    <a href="#" class="pay">Pay</a>
-                </div>
-                <div>
-                    <h2>Yearly plan</h2>
-                    <h3>₦40,000</h3>
-                    <p>✔️ Generate unlimited videos</p>
-                    <p>✔️ Generate unlimited images</p>
-                    <p>✔️ Generate unlimited voices</p>
-                    <a href="#" class="pay">Pay</a>
-                </div>
-            </div>
-        </div>
+  <header class="topbar">
+    <a href="index.html" class="logo">
+      <i class="fa-solid fa-wand-magic-sparkles"></i>
+      Golden <span>AI Studio</span>
+    </a>
+    <a href="index.html" class="back-link">
+      <i class="fa-solid fa-arrow-left"></i> Back to Studio
+    </a>
+  </header>
+
+  <main>
+    <section class="pricing-section">
+      <div class="intro">
+        <span class="eyebrow">UNLOCK YOUR CREATIVITY</span>
+        <h1>Choose Your <span>Plan</span></h1>
+        <p>Generate amazing AI images, videos and voices with a plan that fits you.</p>
+      </div>
+
+      <div id="payment-status" class="status" role="status" aria-live="polite" hidden></div>
+
+      <div class="pricing-grid">
+        <article class="plan-card">
+          <div class="plan-icon"><i class="fa-solid fa-sun"></i></div>
+          <h2>Daily Plan</h2>
+          <p class="description">For quick daily creations</p>
+          <div class="price">₦500 <small>/ day</small></div>
+          <ul>
+            <li><i class="fa-solid fa-check"></i> 1 video up to 5 minutes*</li>
+            <li><i class="fa-solid fa-check"></i> 5 images per day</li>
+            <li><i class="fa-solid fa-check"></i> 3 voice generations per day</li>
+          </ul>
+          <button class="pay-btn" data-plan="daily">
+            <span>Choose Daily</span><i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </article>
+
+        <article class="plan-card featured">
+          <div class="popular">POPULAR</div>
+          <div class="plan-icon"><i class="fa-solid fa-calendar-week"></i></div>
+          <h2>Weekly Plan</h2>
+          <p class="description">More room to create</p>
+          <div class="price">₦2,000 <small>/ week</small></div>
+          <ul>
+            <li><i class="fa-solid fa-check"></i> 5 videos per week, up to 5 minutes each*</li>
+            <li><i class="fa-solid fa-check"></i> 15 images per week</li>
+            <li><i class="fa-solid fa-check"></i> 10 voice generations per week</li>
+          </ul>
+          <button class="pay-btn" data-plan="weekly">
+            <span>Choose Weekly</span><i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </article>
+
+        <article class="plan-card">
+          <div class="plan-icon"><i class="fa-solid fa-calendar-days"></i></div>
+          <h2>Monthly Plan</h2>
+          <p class="description">For regular creators</p>
+          <div class="price">₦10,000 <small>/ month</small></div>
+          <ul>
+            <li><i class="fa-solid fa-check"></i> 10 videos per month, up to 10 minutes each*</li>
+            <li><i class="fa-solid fa-check"></i> 20 images per month</li>
+            <li><i class="fa-solid fa-check"></i> 15 voice generations per month</li>
+          </ul>
+          <button class="pay-btn" data-plan="monthly">
+            <span>Choose Monthly</span><i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </article>
+
+        <article class="plan-card">
+          <div class="plan-icon"><i class="fa-solid fa-crown"></i></div>
+          <h2>Yearly Plan</h2>
+          <p class="description">For dedicated creators</p>
+          <div class="price">₦40,000 <small>/ year</small></div>
+          <ul>
+            <li><i class="fa-solid fa-check"></i> Unlimited video generations*</li>
+            <li><i class="fa-solid fa-check"></i> Unlimited image generations*</li>
+            <li><i class="fa-solid fa-check"></i> Unlimited voice generations*</li>
+          </ul>
+          <button class="pay-btn" data-plan="yearly">
+            <span>Choose Yearly</span><i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </article>
+      </div>
+
+      <p class="fine-print">
+        *Video duration and generation availability depend on backend model support.
+        Unlimited use is subject to fair-use and anti-abuse limits.
+        Your plan activates only after Paystack payment verification.
+      </p>
+
+      <div class="secure-note">
+        <i class="fa-solid fa-shield-halved"></i>
+        Secure payments powered by Paystack
       </div>
     </section>
+  </main>
+
+  <footer>
+    <p>© <span id="year"></span> Golden AI Studio. All rights reserved.</p>
+  </footer>
+
+  <!-- Replace the example Firebase settings in pricing.js -->
+  <script src="pricing.js"></script>
 </body>
 </html>
