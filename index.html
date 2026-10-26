@@ -1,52 +1,48 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Golden AI Studio | Login</title>
 
     <link rel="stylesheet" href="style.css">
-
-    <link
-        href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
-        rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+          rel="stylesheet">
 </head>
-
 <body>
     <div class="box">
         <span class="borderLine"></span>
-        <form action="#" method="post">
+
+        <form id="loginForm">
             <h2>Sign in</h2>
 
-            
-<button type="button" id="google-login" class="google-btn">
-    <img
-        src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-        alt="Google"
-        width="20"
-        height="20"
-    >
-    <span>Continue with Google</span>
-</button>
-   <p>Or</p>
+            <button type="button" id="google-login" class="google-btn">
+                <img
+                    src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+                    alt="Google"
+                    width="20"
+                    height="20">
+                <span>Continue with Google</span>
+            </button>
 
+            <p>Or sign in with email</p>
 
             <div class="inputBox">
                 <input
-                    type="text"
-                    name="username"
-                    autocomplete="username"
+                    type="email"
+                    id="email"
+                    name="email"
+                    autocomplete="email"
                     required>
-                <span>Username</span>
+                <span>Email</span>
                 <i></i>
             </div>
 
             <div class="inputBox">
                 <input
                     type="password"
+                    id="password"
                     name="password"
                     autocomplete="current-password"
                     required>
@@ -56,12 +52,15 @@
 
             <div class="links">
                 <a href="reset-password.html">Forgot password?</a>
-                <a href="signup.html">Signup</a>
+                <a href="register.html">Signup</a>
             </div>
 
-            <input type="submit" value="Login">
+            <p id="message" role="status" aria-live="polite"></p>
+
+            <input type="submit" id="login-submit" value="Login">
         </form>
     </div>
-    <script src="login.js"></script>
+
+    <script type="module" src="login.js"></script>
 </body>
 </html>
