@@ -1,3 +1,25 @@
+import { auth } from "./firebase.js";
+
+import {
+    onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js";
+// Wait for Firebase to restore the login session
+let authInitialized = false;
+let firebaseUser = null;
+let resolveAuthReady;
+
+const authReadyPromise = new Promise(resolve => {
+    resolveAuthReady = resolve;
+});
+
+onAuthStateChanged(auth, user => {
+    firebaseUser = user;
+
+    if (!authInitialized) {
+        authInitialized = true;
+        resolveAuthReady(user);
+    }
+});
 /* ==========================================
    GOLDEN AI STUDIO
    Backend + Generation + History
@@ -85,9 +107,9 @@ function saveHistory(history) {
         console.error("Could not save history:", error);
 
         alert(
-            "An kasa sakamakon a History na wannan shafin ba. " +
-            "Storage ya cika ko sakamakon ya yi girma. " +
-            "Zazzage sakamakon idan kana buƙatarsa."
+            "There's no result for this page. " +
+            "Storage is full. " +
+            "Extract result if you want."
         );
 
         return false;
@@ -277,18 +299,32 @@ async function generateMediaResponse(
     };
 
     const endpoint = endpoints[historyItem.category];
+try {
+    // Wait until Firebase checks the saved login session
+    await authReadyPromise;
 
-    try {
-        const response = await fetch(API_BASE + endpoint, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                prompt: historyItem.prompt,
-                aspectRatio: "1:1"
-            })
-        });
+    const user = auth.currentUser;
+
+    if (!user) {
+        throw new Error(
+            "We didn't find your login pleasetry again ."
+        );
+    }
+
+    // Get Firebase ID token for the backend
+    const idToken = await user.getIdToken();
+
+    const response = await fetch(API_BASE + endpoint, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${idToken}`
+        },
+        body: JSON.stringify({
+            prompt: historyItem.prompt,
+            aspectRatio: "1:1"
+        })
+    });
 
         let data;
 
