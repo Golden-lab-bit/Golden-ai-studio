@@ -69,8 +69,8 @@ if (document.querySelector(".text") && typeof Typed !== "undefined") {
         strings: [
             "Hi Welcome",
             "I'm Golden AI Studio",
-            "Please wait we're upgrading"
-            "We'll notify you when we finished"
+            "Please wait we're upgrading",
+            "We'll notify you when we finished",
         ],
         typeSpeed: 100,
         backSpeed: 100,
