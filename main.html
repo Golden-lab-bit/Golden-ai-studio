@@ -30,7 +30,7 @@
 
         <!-- textarea and controls in <form> -->
         <div class="chat-footer">
-            <form action="#" class="chat-form">
+            <form class="chat-form">
                 <div class="generation-modes">
                     <button type="button" class="mode-btn active" data-mode="image">
                         <i class="fa-solid fa-image"></i> Image
@@ -45,11 +45,12 @@
                     </button>
                 </div>
             
-                <textarea
-                    placeholder="Paste a Prompt to Start"
-                    class="message-input"
-                    required
-                ></textarea>
+<textarea
+    placeholder="Describe the image, video, or voice you want to generate..."
+    class="message-input"
+    rows="3"
+    required
+></textarea>
             
                 <div class="chat-controls">
                     <div class="file-upload-wrapper" id="file-upload-wrapper">
