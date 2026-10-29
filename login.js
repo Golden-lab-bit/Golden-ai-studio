@@ -1,4 +1,23 @@
 import { auth } from "./firebase.js";
+import {
+  GoogleAuthProvider,
+  signInWithPopup
+} from "https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js";
+
+const googleButton = document.getElementById("google-login");
+
+googleButton?.addEventListener("click", async () => {
+  try {
+    const provider = new GoogleAuthProvider();
+    await signInWithPopup(auth, provider);
+    window.location.href = "main.html";
+  } catch (error) {
+    console.error("Google login error:", error.code, error.message);
+    alert(error.message);
+  }
+});
+
+import { auth } from "./firebase.js";
 
 import {
     signInWithEmailAndPassword
