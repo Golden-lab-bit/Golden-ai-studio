@@ -289,17 +289,170 @@ filterButtons.forEach(button => {
 // GENERATE IMAGE, VIDEO OR VOICE
 // ==========================================
 
-async function generateMediaResponse(
-    historyItem,
-    resultCard
-) {
-    const endpoints = {
-        image: "/api/image",
-        video: "/api/video",
-        voice: "/api/voice"
+async function generateMediaResponse(historyItem, resultCard) {
+const endpoints = {
+image: "/api/image",
+video: "/api/video",
+voice: "/api/voice"
+};
+
+const endpoint = endpoints[historyItem.category];
+let idToken = null;
+
+try {
+    await authReadyPromise;
+
+    const user = auth.currentUser;
+
+    if (!user) {
+        throw new Error("Please sign in again to generate media.");
+    }
+
+    idToken = await user.getIdToken();
+
+    const headers = {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${idToken}`
     };
 
-    const endpoint = endpoints[historyItem.category];
+    const aspectRatio =
+        historyItem.category === "video" ? "16:9" : "1:1";
+
+    const response = await fetch(API_BASE + endpoint, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+            prompt: historyItem.prompt,
+            aspectRatio
+        })
+    });
+
+    let data;
+
+    try {
+        data = await response.json();
+    } catch {
+        throw new Error("The backend returned an invalid response.");
+    }
+
+    if (!response.ok) {
+        throw new Error(
+            data.error || "Generation failed. Please try again."
+        );
+    }
+
+    // Images and voice should return their finished media.
+    // Videos may return a job ID because generation is asynchronous.
+    if (
+        historyItem.category === "video" &&
+        data.jobId &&
+        !data.videoUrl
+    ) {
+        const jobId = data.jobId;
+        let completedVideo = false;
+
+        for (let attempt = 0; attempt < 36; attempt++) {
+            // Check every 10 seconds; don't start a duplicate video.
+            await new Promise(resolve => setTimeout(resolve, 10000));
+
+            const statusResponse = await fetch(
+                `${API_BASE}/api/video/${encodeURIComponent(jobId)}`,
+                {
+                    method: "GET",
+                    headers: {
+                        "Authorization": `Bearer ${idToken}`
+                    }
+                }
+            );
+
+            let statusData;
+
+            try {
+                statusData = await statusResponse.json();
+            } catch {
+                throw new Error("Could not read video generation status.");
+            }
+
+            if (!statusResponse.ok) {
+                throw new Error(
+                    statusData.error || "Could not check video status."
+                );
+            }
+
+            if (
+                statusData.status === "failed" ||
+                statusData.status === "cancelled" ||
+                statusData.status === "expired"
+            ) {
+                throw new Error(
+                    statusData.error || "Video generation failed."
+                );
+            }
+
+            if (
+                statusData.status === "completed" &&
+                statusData.videoUrl
+            ) {
+                data.videoUrl = statusData.videoUrl;
+                completedVideo = true;
+                break;
+            }
+        }
+
+        if (!completedVideo) {
+            throw new Error(
+                "Video is taking longer than expected. Please check History again later."
+            );
+        }
+    }
+
+    let media = "";
+
+    if (historyItem.category === "image") {
+        media = data.image || "";
+    } else if (historyItem.category === "voice") {
+        media = data.audio || "";
+    } else if (historyItem.category === "video") {
+        media = data.videoUrl || "";
+    }
+
+    if (typeof media !== "string" || !media) {
+        throw new Error("The backend did not return the generated media.");
+    }
+
+    historyItem.media = media;
+    historyItem.status = "complete";
+    historyItem.error = "";
+
+    updateHistoryItem(historyItem);
+
+} catch (error) {
+    console.error("Media generation error:", error);
+
+    historyItem.status = "error";
+    historyItem.error =
+        error.message || "Generation failed. Please try again.";
+
+    updateHistoryItem(historyItem);
+
+} finally {
+    isGenerating = false;
+
+    if (sendMessageButton) {
+        sendMessageButton.disabled = false;
+        sendMessageButton.style.opacity = "1";
+    }
+
+    if (messageInput) {
+        messageInput.disabled = false;
+    }
+
+    if (resultCard) {
+        resultCard.setAttribute("aria-busy", "false");
+    }
+}
+
+}
 try {
     // Wait until Firebase checks the saved login session
     await authReadyPromise;
