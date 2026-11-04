@@ -16,6 +16,21 @@ body {
     background: #23242a;
     min-height: 100vh;
 }
+.back-arrow {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+}
+.back-arrow a {
+    color: #0ef;
+    font-size: 30px;
+    text-decoration: none;
+    transition: 0.3s;
+}
+.back-arrow a:hover {
+    color: #fff;
+    transform: translateX(-5px);
+}
 
 .header {
     color: #fff;
