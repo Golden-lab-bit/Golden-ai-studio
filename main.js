@@ -290,7 +290,7 @@ filterButtons.forEach(button => {
 // GENERATE IMAGE, VIDEO OR VOICE
 // ==========================================
 
-async function generateMediaResponse(historyItem, resultCard) {
+async function generateMediaResponse(historyItem, resultCard, sourceImage = null)  {
     const endpoints = {
         image: "/api/image",
         video: "/api/video",
@@ -316,11 +316,13 @@ async function generateMediaResponse(historyItem, resultCard) {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${idToken}`
                 },
-                body: JSON.stringify({
-                    prompt: historyItem.prompt,
-                    aspectRatio:
-                        historyItem.category === "video" ? "16:9" : "1:1"
-                })
+              body: JSON.stringify({
+    prompt: historyItem.prompt,
+    aspectRatio:
+        historyItem.category === "video" ? "16:9" : "1:1",
+    sourceImage:
+        historyItem.category === "image" ? sourceImage : null
+})
             }
         );
 
@@ -453,7 +455,9 @@ async function handleOutgoingMessage(event) {
     }
 
     isGenerating = true;
-
+// Keep uploaded image before clearing the preview
+const uploadedImage = userData.file?.data || null;
+    
     // Clear prompt immediately after Send
     messageInput.value = "";
 
@@ -503,7 +507,11 @@ async function handleOutgoingMessage(event) {
         });
     }
 
-    await generateMediaResponse(historyItem, resultCard);
+await generateMediaResponse(
+    historyItem,
+    resultCard,
+    uploadedImage
+);
 }
 
 // ==========================================
@@ -571,7 +579,7 @@ if (fileInput && fileUploadWrapper) {
         if (!file) return;
 
         if (!file.type.startsWith("image/")) {
-            alert("Da fatan zaɓi hoton image ne kawai.");
+            alert("Please select the image only.");
             fileInput.value = "";
             return;
         }
@@ -588,11 +596,44 @@ if (fileInput && fileUploadWrapper) {
             }
 
             fileUploadWrapper.classList.add("file-uploaded");
+// Convert uploaded image to WEBP for AI Horde
+const image = new Image();
+
+image.onload = () => {
+    const canvas = document.createElement("canvas");
+    canvas.width = image.naturalWidth;
+    canvas.height = image.naturalHeight;
+
+    const context = canvas.getContext("2d");
+    context.drawImage(image, 0, 0);
+
+    canvas.toBlob(blob => {
+        if (!blob) {
+            alert("Could not prepare the uploaded image.");
+            return;
+        }
+
+        const webpReader = new FileReader();
+
+        webpReader.onload = () => {
+            const dataURL = webpReader.result;
 
             userData.file = {
                 name: file.name,
-                type: file.type
+                type: "image/webp",
+                data: dataURL.split(",")[1]
             };
+        };
+
+        webpReader.readAsDataURL(blob);
+    }, "image/webp", 0.90);
+};
+
+image.onerror = () => {
+    alert("Could not read this image.");
+};
+
+image.src = event.target.result;
         };
 
         reader.readAsDataURL(file);
