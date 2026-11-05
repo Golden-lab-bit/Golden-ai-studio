@@ -640,6 +640,139 @@ if (clearHistoryButton) {
 }
 
 // ==========================================
+// FULLSCREEN IMAGE VIEWER + DOWNLOAD
+// ==========================================
+
+// Create fullscreen image viewer
+const imageViewer = document.createElement("div");
+
+imageViewer.id = "image-viewer";
+
+imageViewer.innerHTML = `
+    <div class="image-viewer-toolbar">
+        <button type="button" id="download-viewer-image"
+            aria-label="Download image">
+            <i class="fa-solid fa-download"></i>
+            <span>Download</span>
+        </button>
+
+        <button type="button" id="close-image-viewer"
+            aria-label="Close image">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+
+    <div class="image-viewer-content">
+        <img id="fullscreen-image" src="" alt="Generated image">
+    </div>
+</div>`;
+
+document.body.appendChild(imageViewer);
+
+const fullscreenImage = document.querySelector("#fullscreen-image");
+const closeImageViewer = document.querySelector("#close-image-viewer");
+const downloadViewerImage = document.querySelector("#download-viewer-image");
+
+let currentFullscreenImage = "";
+
+// Open image in fullscreen
+if (historyList) {
+    historyList.addEventListener("click", event => {
+        const clickedImage = event.target.closest(".history-item img");
+
+        if (!clickedImage) return;
+
+        currentFullscreenImage = clickedImage.src;
+        fullscreenImage.src = currentFullscreenImage;
+
+        imageViewer.classList.add("active");
+        document.body.style.overflow = "hidden";
+    });
+}
+
+// Close fullscreen
+function closeFullscreenImage() {
+    imageViewer.classList.remove("active");
+    document.body.style.overflow = "";
+
+    fullscreenImage.src = "";
+    currentFullscreenImage = "";
+}
+
+closeImageViewer.addEventListener("click", closeFullscreenImage);
+
+// Close when clicking the dark background
+imageViewer.addEventListener("click", event => {
+    if (event.target === imageViewer) {
+        closeFullscreenImage();
+    }
+});
+
+// Close with Escape key
+document.addEventListener("keydown", event => {
+    if (event.key === "Escape" &&
+        imageViewer.classList.contains("active")) {
+        closeFullscreenImage();
+    }
+});
+
+// Download fullscreen image
+downloadViewerImage.addEventListener("click", async () => {
+    if (!currentFullscreenImage) return;
+
+    const downloadButtonText = downloadViewerImage.innerHTML;
+
+    try {
+        downloadViewerImage.disabled = true;
+        downloadViewerImage.innerHTML =
+            '<i class="fa-solid fa-spinner fa-spin"></i> Downloading...';
+
+        const response = await fetch(currentFullscreenImage);
+
+        if (!response.ok) {
+            throw new Error("Could not download image.");
+        }
+
+        const blob = await response.blob();
+        const imageURL = URL.createObjectURL(blob);
+
+        const extension = blob.type.includes("png") ? "png" :
+                         blob.type.includes("webp") ? "webp" : "jpg";
+
+        const link = document.createElement("a");
+
+        link.href = imageURL;
+        link.download = "golden-ai-image-" + Date.now() + "." + extension;
+
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+
+        setTimeout(() => URL.revokeObjectURL(imageURL), 2000);
+
+        downloadViewerImage.innerHTML =
+            '<i class="fa-solid fa-check"></i> Downloaded';
+
+    } catch (error) {
+        console.error("Image download error:", error);
+
+        alert(
+            "Couldn't download. please try again or check internet connection."
+        );
+
+        downloadViewerImage.innerHTML = downloadButtonText;
+
+    } finally {
+        downloadViewerImage.disabled = false;
+
+        setTimeout(() => {
+            downloadViewerImage.innerHTML =
+                '<i class="fa-solid fa-download"></i> <span>Download</span>';
+        }, 2000);
+    }
+});
+
+// ==========================================
 // LOAD SAVED HISTORY ON PAGE OPEN
 // ==========================================
 
