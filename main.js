@@ -763,7 +763,7 @@ const imageURL = URL.createObjectURL(jpgBlob);
         const link = document.createElement("a");
 
         link.href = imageURL;
-        link.download = "golden-ai-image-" + Date.now() + "." + extension;
+        link.download = "golden-ai-image-" + Date.now() + ".jpg";
 
         document.body.appendChild(link);
         link.click();
