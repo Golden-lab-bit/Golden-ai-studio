@@ -733,11 +733,32 @@ downloadViewerImage.addEventListener("click", async () => {
             throw new Error("Could not download image.");
         }
 
-        const blob = await response.blob();
-        const imageURL = URL.createObjectURL(blob);
+const blob = await response.blob();
 
-        const extension = blob.type.includes("png") ? "png" :
-                         blob.type.includes("webp") ? "webp" : "jpg";
+// Convert image to JPG
+const bitmap = await createImageBitmap(blob);
+
+const canvas = document.createElement("canvas");
+canvas.width = bitmap.width;
+canvas.height = bitmap.height;
+
+const context = canvas.getContext("2d");
+
+// White background for transparent images
+context.fillStyle = "#ffffff";
+context.fillRect(0, 0, canvas.width, canvas.height);
+
+context.drawImage(bitmap, 0, 0);
+
+const jpgBlob = await new Promise(resolve => {
+    canvas.toBlob(resolve, "image/jpeg", 0.95);
+});
+
+if (!jpgBlob) {
+    throw new Error("Could not convert image to JPG.");
+}
+
+const imageURL = URL.createObjectURL(jpgBlob);
 
         const link = document.createElement("a");
 
