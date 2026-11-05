@@ -63,6 +63,7 @@ const userData = {
     file: null
 };
 
+let imagePreparationPromise = Promise.resolve();
 // 6. Typed.js welcome animation
 if (document.querySelector(".text") && typeof Typed !== "undefined") {
     new Typed(".text", {
@@ -456,7 +457,20 @@ async function handleOutgoingMessage(event) {
 
     isGenerating = true;
 // Keep uploaded image before clearing the preview
-const uploadedImage = userData.file?.data || null;
+// Wait until the uploaded image has finished converting to WebP.
+if (currentMode === "image" && fileInput?.files?.length) {
+    await imagePreparationPromise;
+}
+
+const uploadedImage =
+    currentMode === "image" ? userData.file?.data || null : null;
+
+if (currentMode === "image" && fileInput?.files?.length && !uploadedImage) {
+    isGenerating = false;
+    if (sendMessageButton) sendMessageButton.disabled = false;
+    if (messageInput) messageInput.disabled = false;
+    return;
+}
     
     // Clear prompt immediately after Send
     messageInput.value = "";
@@ -572,77 +586,125 @@ if (fileUploadButton && fileInput) {
     });
 }
 
+function readFileAsDataURL(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(
+            new Error("Could not read the selected image.")
+        );
+
+        reader.readAsDataURL(file);
+    });
+}
+
+function loadImage(dataURL) {
+    return new Promise((resolve, reject) => {
+        const image = new Image();
+
+        image.onload = () => resolve(image);
+        image.onerror = () => reject(
+            new Error("Could not load the selected image.")
+        );
+
+        image.src = dataURL;
+    });
+}
+
 if (fileInput && fileUploadWrapper) {
     fileInput.addEventListener("change", () => {
-        const file = fileInput.files && fileInput.files[0];
+        const file = fileInput.files?.[0];
 
         if (!file) return;
 
         if (!file.type.startsWith("image/")) {
-            alert("Please select the image only.");
+            alert("Please select an image only.");
             fileInput.value = "";
             return;
         }
 
-        // This only previews the file.
-        // Your current backend generation routes do not use this upload.
-        const reader = new FileReader();
+        userData.file = null;
 
-        reader.onload = event => {
-            const preview = fileUploadWrapper.querySelector("img");
+        imagePreparationPromise = (async () => {
+            try {
+                const originalDataURL = await readFileAsDataURL(file);
 
-            if (preview) {
-                preview.src = event.target.result;
+                const preview = fileUploadWrapper.querySelector("img");
+
+                if (preview) {
+                    preview.src = originalDataURL;
+                }
+
+                fileUploadWrapper.classList.add("file-uploaded");
+
+                const image = await loadImage(originalDataURL);
+
+                // Resize large images to a maximum of 1024 pixels.
+                const maxDimension = 1024;
+                const scale = Math.min(
+                    1,
+                    maxDimension / Math.max(
+                        image.naturalWidth,
+                        image.naturalHeight
+                    )
+                );
+
+                const canvas = document.createElement("canvas");
+
+                canvas.width = Math.round(image.naturalWidth * scale);
+                canvas.height = Math.round(image.naturalHeight * scale);
+
+                const context = canvas.getContext("2d");
+
+                if (!context) {
+                    throw new Error("Could not prepare the image.");
+                }
+
+                context.drawImage(
+                    image,
+                    0,
+                    0,
+                    canvas.width,
+                    canvas.height
+                );
+
+                const webpBlob = await new Promise(resolve => {
+                    canvas.toBlob(
+                        resolve,
+                        "image/webp",
+                        0.82
+                    );
+                });
+
+                if (!webpBlob) {
+                    throw new Error("Could not convert image to WebP.");
+                }
+
+                const webpDataURL = await readFileAsDataURL(webpBlob);
+
+                userData.file = {
+                    name: file.name,
+                    type: "image/webp",
+                    data: webpDataURL.split(",")[1]
+                };
+
+                console.log("Uploaded image is ready for editing.");
+            } catch (error) {
+                console.error("Image preparation error:", error);
+
+                userData.file = null;
+
+                alert(error.message || "Could not prepare the uploaded image.");
             }
-
-            fileUploadWrapper.classList.add("file-uploaded");
-// Convert uploaded image to WEBP for AI Horde
-const image = new Image();
-
-image.onload = () => {
-    const canvas = document.createElement("canvas");
-    canvas.width = image.naturalWidth;
-    canvas.height = image.naturalHeight;
-
-    const context = canvas.getContext("2d");
-    context.drawImage(image, 0, 0);
-
-    canvas.toBlob(blob => {
-        if (!blob) {
-            alert("Could not prepare the uploaded image.");
-            return;
-        }
-
-        const webpReader = new FileReader();
-
-        webpReader.onload = () => {
-            const dataURL = webpReader.result;
-
-            userData.file = {
-                name: file.name,
-                type: "image/webp",
-                data: dataURL.split(",")[1]
-            };
-        };
-
-        webpReader.readAsDataURL(blob);
-    }, "image/webp", 0.90);
-};
-
-image.onerror = () => {
-    alert("Could not read this image.");
-};
-
-image.src = event.target.result;
-        };
-
-        reader.readAsDataURL(file);
+        })();
     });
 }
 
 if (fileCancelButton && fileUploadWrapper) {
     fileCancelButton.addEventListener("click", () => {
         userData.file = null;
+        imagePreparationPromise = Promise.resolve();
 
         if (fileInput) {
             fileInput.value = "";
@@ -657,7 +719,6 @@ if (fileCancelButton && fileUploadWrapper) {
         fileUploadWrapper.classList.remove("file-uploaded");
     });
 }
-
 // ==========================================
 // CLEAR HISTORY
 // ==========================================
