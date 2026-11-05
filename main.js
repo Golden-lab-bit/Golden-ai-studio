@@ -69,6 +69,7 @@ if (document.querySelector(".text") && typeof Typed !== "undefined") {
         strings: [
             "Hi Welcome",
             "I'm Golden AI Studio",
+            "We upgrade image generator",
             "Please wait we're upgrading",
             "We'll notify you when we finished",
         ],
