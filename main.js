@@ -340,57 +340,63 @@ async function generateMediaResponse(historyItem, resultCard, sourceImage = null
         }
 
         // Video may take time, so check its job status.
-        if (historyItem.category === "video" && data.jobId && !data.videoUrl) {
-            let completed = false;
+       // Video may take time, so check its job status.
+const videoJobId = data.jobId || data.task_id;
 
-            for (let attempt = 0; attempt < 36; attempt++) {
-                await new Promise(resolve => setTimeout(resolve, 10000));
+if (
+    historyItem.category === "video" &&
+    videoJobId &&
+    !data.videoUrl
+) {
+    let completed = false;
 
-                const statusResponse = await fetch(
-                    `${API_BASE}/api/video/${encodeURIComponent(data.jobId)}`,
-                    {
-                        headers: {
-                            "Authorization": `Bearer ${idToken}`
-                        }
-                    }
-                );
+    for (let attempt = 0; attempt < 36; attempt++) {
+        await new Promise(resolve => setTimeout(resolve, 10000));
 
-                let statusData;
-
-                try {
-                    statusData = await statusResponse.json();
-                } catch {
-                    throw new Error("Could not read video status.");
-                }
-
-                if (!statusResponse.ok) {
-                    throw new Error(
-                        statusData.error || "Could not check video status."
-                    );
-                }
-
-                if (["failed", "cancelled", "expired"].includes(statusData.status)) {
-                    throw new Error(
-                        statusData.error || "Video generation failed."
-                    );
-                }
-
-                if (statusData.status === "completed" && statusData.videoUrl) {
-                    data.videoUrl = statusData.videoUrl;
-                    completed = true;
-                    break;
+        const statusResponse = await fetch(
+            `${API_BASE}/api/video/${encodeURIComponent(videoJobId)}`,
+            {
+                headers: {
+                    "Authorization": `Bearer ${idToken}`
                 }
             }
+        );
 
-            if (!completed) {
-                throw new Error(
-                    "Video is taking longer than expected. Please try again later."
-                );
-            }
+        const statusData = await statusResponse.json();
+
+        if (!statusResponse.ok) {
+            throw new Error(
+                statusData.error || "Could not check video status."
+            );
         }
 
-        let media = "";
+        const status = String(statusData.status || "").toLowerCase();
 
+        if (
+            ["failed", "failure", "cancelled", "canceled", "expired", "revoked"]
+            .includes(status)
+        ) {
+            throw new Error(
+                statusData.error || "Video generation failed."
+            );
+        }
+
+        if (
+            ["completed", "success"].includes(status) &&
+            statusData.videoUrl
+        ) {
+            data.videoUrl = statusData.videoUrl;
+            completed = true;
+            break;
+        }
+    }
+
+    if (!completed) {
+        throw new Error(
+            "Video is taking longer than expected. Please try again later."
+        );
+    }
+}
         if (historyItem.category === "image") {
             media = data.image || "";
         } else if (historyItem.category === "voice") {
@@ -553,21 +559,6 @@ if (messageInput) {
             if (isGenerating) return;
 
             if (chatForm && typeof chatForm.requestSubmit === "function") {
-                chatForm.requestSubmit();
-            } else {
-                handleOutgoingMessage(event);
-            }
-        }
-    });
-}
-
-// Enter sends; Shift + Enter creates a new line
-if (messageInput && chatForm) {
-    messageInput.addEventListener("keydown", event => {
-        if (event.key === "Enter" && !event.shiftKey) {
-            event.preventDefault();
-
-            if (typeof chatForm.requestSubmit === "function") {
                 chatForm.requestSubmit();
             } else {
                 handleOutgoingMessage(event);
