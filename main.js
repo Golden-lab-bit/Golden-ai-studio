@@ -672,13 +672,17 @@ if (fileInput && fileUploadWrapper) {
                     throw new Error("Could not convert image to WebP.");
                 }
 
-                const webpDataURL = await readFileAsDataURL(webpBlob);
+const webpDataURL = await readFileAsDataURL(webpBlob);
 
-                userData.file = {
-                    name: file.name,
-                    type: "image/webp",
-                    data: webpDataURL.split(",")[1]
-                };
+if (!webpDataURL.startsWith("data:image/webp;base64,")) {
+    throw new Error("Image conversion to WebP failed.");
+}
+
+userData.file = {
+    name: file.name,
+    type: "image/webp",
+    data: webpDataURL.split(",")[1]
+};
 
                 console.log("Uploaded image is ready for editing.");
             } catch (error) {
